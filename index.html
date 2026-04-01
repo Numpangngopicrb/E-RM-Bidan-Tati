@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-RM Bidan Tati Rohayati, S.ST</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            height: 100vh;
+            background: linear-gradient(180deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            position: fixed;
+            width: 250px;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .sidebar h4 {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255,255,255,0.2);
+            border-left: 4px solid #fff;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: 0.3s;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .section-page { display: none; }
+        .section-page.active { display: block; }
+        .btn-pink { background-color: #ff758c; color: white; border: none; }
+        .btn-pink:hover { background-color: #ff5e78; color: white; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-250px); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar d-flex flex-column py-4 shadow" id="sidebar">
+        <div class="text-center mb-4 px-3">
+            <i class="fas fa-hospital-user fa-3x mb-2"></i>
+            <h4>BPM Tati Rohayati, S.ST</h4>
+            <small>E-Rekam Medis</small>
+        </div>
+        <nav>
+            <a href="#" class="active" onclick="showPage('dashboard')"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a href="#" onclick="showPage('pasien')"><i class="fas fa-users me-2"></i> Pendaftaran Pasien</a>
+            <a href="#" onclick="showPage('anc')"><i class="fas fa-user-md me-2"></i> Rekam Medis ANC</a>
+            <a href="#" onclick="showPage('persalinan')"><i class="fas fa-baby me-2"></i> Persalinan</a>
+            <a href="#" onclick="showPage('nifas')"><i class="fas fa-female me-2"></i> Nifas</a>
+            <a href="#" onclick="showPage('kb')"><i class="fas fa-pills me-2"></i> Pelayanan KB</a>
+            <a href="#" onclick="showPage('imunisasi')"><i class="fas fa-syringe me-2"></i> Imunisasi Bayi</a>
+            <a href="#" onclick="showPage('laporan')"><i class="fas fa-chart-line me-2"></i> Laporan & Rekap</a>
+        </nav>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <button class="btn btn-pink d-md-none mb-3" onclick="document.getElementById('sidebar').classList.toggle('show')">
+            <i class="fas fa-bars"></i> Menu
+        </button>
+
+        <div id="dashboard" class="section-page active">
+            <h2 class="mb-4">Dashboard Utama</h2>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white p-3 text-center">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h5>Total Pasien</h5>
+                        <h3 id="countPasien">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white p-3 text-center">
+                        <i class="fas fa-user-md fa-2x mb-2"></i>
+                        <h5>Ibu Hamil (ANC)</h5>
+                        <h3 id="countANC">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white p-3 text-center">
+                        <i class="fas fa-baby fa-2x mb-2"></i>
+                        <h5>Persalinan</h5>
+                        <h3 id="countPersalinan">0</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white p-3 text-center">
+                        <i class="fas fa-pills fa-2x mb-2"></i>
+                        <h5>KB Aktif</h5>
+                        <h3 id="countKB">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-4 mt-3">
+                <h5>Grafik Kunjungan Bulanan</h5>
+                <canvas id="kunjunganChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div id="pasien" class="section-page">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>Data Pasien</h2>
+                <div>
+                    <button class="btn btn-success" onclick="exportExcel('tabelPasien', 'Data_Pasien')"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn btn-danger" onclick="exportPDF('pdfAreaPasien', 'Data_Pasien')"><i class="fas fa-file-pdf"></i> PDF</button>
+                </div>
+            </div>
+            
+            <div class="card p-4">
+                <form id="formPasien" onsubmit="simpanPasien(event)">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Nama Lengkap</label>
+                            <input type="text" class="form-control" id="p_nama" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>NIK</label>
+                            <input type="number" class="form-control" id="p_nik" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Tanggal Lahir</label>
+                            <input type="date" class="form-control" id="p_tgl" onchange="hitungUmur()" required>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label>Umur</label>
+                            <input type="text" class="form-control" id="p_umur" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>No HP (WhatsApp)</label>
+                            <input type="number" class="form-control" id="p_hp" required placeholder="08xxx">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Golongan Darah</label>
+                            <select class="form-control" id="p_goldar">
+                                <option value="-">-</option><option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Status Pasien</label>
+                            <select class="form-control" id="p_status" required>
+                                <option value="Ibu Hamil">Ibu Hamil</option>
+                                <option value="KB">Peserta KB</option>
+                                <option value="Bayi/Anak">Bayi/Anak</option>
+                                <option value="Umum">Umum</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label>Alamat Lengkap</label>
+                            <textarea class="form-control" id="p_alamat" rows="2" required></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink"><i class="fas fa-save"></i> Simpan Pasien</button>
+                </form>
+            </div>
+
+            <div class="card p-4 mt-4" id="pdfAreaPasien">
+                <h5>Daftar Pasien Terdaftar</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped" id="tabelPasien">
+                        <thead>
+                            <tr>
+                                <th>Nama</th><th>NIK</th><th>Umur</th><th>No HP</th><th>Status</th><th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataPasien">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="anc" class="section-page">
+            <h2>Rekam Medis Ibu Hamil (ANC)</h2>
+            <div class="card p-4">
+                <form id="formANC" onsubmit="simpanANC(event)">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Pilih Pasien</label>
+                            <select class="form-control" id="anc_pasien" required>
+                                <option value="">-- Pilih Pasien --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>HPHT (Hari Pertama Haid Terakhir)</label>
+                            <input type="date" class="form-control" id="anc_hpht" onchange="hitungHPL()" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>HPL (Hari Perkiraan Lahir) - <small class="text-success">Auto</small></label>
+                            <input type="date" class="form-control" id="anc_hpl" readonly>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Usia Kehamilan (Minggu)</label>
+                            <input type="number" class="form-control" id="anc_uk">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Berat Badan (Kg)</label>
+                            <input type="number" class="form-control" id="anc_bb">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Tekanan Darah</label>
+                            <input type="text" class="form-control" id="anc_td" placeholder="120/80">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Tinggi Fundus (cm)</label>
+                            <input type="number" class="form-control" id="anc_tfu">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>DJJ (Detak Jantung Janin)</label>
+                            <input type="text" class="form-control" id="anc_djj" placeholder="x/menit">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Vitamin / Obat</label>
+                            <input type="text" class="form-control" id="anc_obat">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Tindakan</label>
+                            <input type="text" class="form-control" id="anc_tindakan">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label>Keluhan</label>
+                            <textarea class="form-control" id="anc_keluhan" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink"><i class="fas fa-save"></i> Simpan Data ANC</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="persalinan" class="section-page">
+            <h2>Laporan Persalinan</h2>
+            <div class="card p-4">
+                <form onsubmit="event.preventDefault(); alert('Modul tersimpan! (Silakan kembangkan fungsional database)');">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Nama Ibu</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Tanggal & Waktu Persalinan</label>
+                            <input type="datetime-local" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Jenis Persalinan</label>
+                            <select class="form-control"><option>Normal</option><option>Tindakan</option></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Penolong</label>
+                            <input type="text" class="form-control" value="Bidan Tati Rohayati, S.ST">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Jenis Kelamin Bayi</label>
+                            <select class="form-control"><option>Laki-laki</option><option>Perempuan</option></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Berat Bayi (gram)</label>
+                            <input type="number" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Panjang Bayi (cm)</label>
+                            <input type="number" class="form-control">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label>Kondisi Bayi</label>
+                            <input type="text" class="form-control" placeholder="Menangis kuat, dll">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink"><i class="fas fa-save"></i> Simpan Persalinan</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="kb" class="section-page">
+            <h2>Layanan Keluarga Berencana (KB)</h2>
+            <div class="card p-4">
+                <form onsubmit="event.preventDefault(); alert('Modul KB tersimpan!');">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label>Nama Akseptor</label>
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Jenis KB</label>
+                            <select class="form-control">
+                                <option>Pil</option><option>Suntik 1 Bulan</option><option>Suntik 3 Bulan</option>
+                                <option>IUD</option><option>Implant</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Tanggal Pemasangan/Pemberian</label>
+                            <input type="date" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label>Tanggal Kontrol Berikutnya <small class="text-danger">(Untuk WhatsApp Reminder)</small></label>
+                            <input type="date" class="form-control">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink"><i class="fas fa-save"></i> Simpan Data KB</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="nifas" class="section-page"><h2>Pemeriksaan Nifas</h2><div class="card p-4"><p>Formulir Nifas (Struktur mirip dengan ANC)</p></div></div>
+        <div id="imunisasi" class="section-page"><h2>Imunisasi Bayi</h2><div class="card p-4"><p>Formulir Imunisasi</p></div></div>
+        <div id="laporan" class="section-page"><h2>Laporan & Rekap Data</h2><div class="card p-4"><p>Di sini akan tampil resume perkunjungan dan tarif (Bisa diekspor ke Excel & PDF menggunakan tombol di atas).</p></div></div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // ==========================================
+        // 1. KONFIGURASI FIREBASE
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "ISI_API_KEY_ANDA_DISINI", // Dapatkan dari Settings Firebase
+            authDomain: "e-rm-bidan-tati.firebaseapp.com",
+            databaseURL: "https://e-rm-bidan-tati-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "e-rm-bidan-tati",
+            storageBucket: "e-rm-bidan-tati.appspot.com",
+            messagingSenderId: "ISI_SENDER_ID",
+            appId: "ISI_APP_ID"
+        };
+        
+        // Initialize Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // ==========================================
+        // 2. NAVIGASI MENU (SPA Logic)
+        // ==========================================
+        function showPage(pageId) {
+            document.querySelectorAll('.section-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.sidebar a').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            // Tutup sidebar di mobile setelah klik
+            if(window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.remove('show');
+            }
+        }
+
+        // ==========================================
+        // 3. LOGIC APLIKASI
+        // ==========================================
+        
+        // A. Hitung Umur Otomatis
+        function hitungUmur() {
+            const tglLahir = new Date(document.getElementById('p_tgl').value);
+            const hariIni = new Date();
+            let umur = hariIni.getFullYear() - tglLahir.getFullYear();
+            const m = hariIni.getMonth() - tglLahir.getMonth();
+            if (m < 0 || (m === 0 && hariIni.getDate() < tglLahir.getDate())) {
+                umur--;
+            }
+            document.getElementById('p_umur').value = umur + " Tahun";
+        }
+
+        // B. Hitung HPL Otomatis (Rumus Naegele: HPHT + 7 hari, Bulan - 3, Tahun + 1)
+        function hitungHPL() {
+            const hphtInput = document.getElementById('anc_hpht').value;
+            if (hphtInput) {
+                let hphtDate = new Date(hphtInput);
+                hphtDate.setDate(hphtDate.getDate() + 7);
+                hphtDate.setMonth(hphtDate.getMonth() - 3);
+                hphtDate.setFullYear(hphtDate.getFullYear() + 1);
+                
+                let dd = String(hphtDate.getDate()).padStart(2, '0');
+                let mm = String(hphtDate.getMonth() + 1).padStart(2, '0');
+                let yyyy = hphtDate.getFullYear();
+                
+                document.getElementById('anc_hpl').value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
+        // C. Simpan Data Pasien ke Firebase
+        function simpanPasien(e) {
+            e.preventDefault();
+            const pasienRef = db.ref('pasien').push();
+            const data = {
+                nama: document.getElementById('p_nama').value,
+                nik: document.getElementById('p_nik').value,
+                tgl_lahir: document.getElementById('p_tgl').value,
+                umur: document.getElementById('p_umur').value,
+                hp: document.getElementById('p_hp').value,
+                goldar: document.getElementById('p_goldar').value,
+                status: document.getElementById('p_status').value,
+                alamat: document.getElementById('p_alamat').value,
+                timestamp: Date.now()
+            };
+
+            pasienRef.set(data).then(() => {
+                alert("Data Pasien Berhasil Disimpan!");
+                document.getElementById('formPasien').reset();
+                // Opsional: Kirim WhatsApp Gateway disini
+            }).catch(err => console.error(err));
+        }
+
+        // D. Tampilkan Data Pasien Realtime
+        db.ref('pasien').on('value', (snapshot) => {
+            const tbody = document.getElementById('dataPasien');
+            const selectAnc = document.getElementById('anc_pasien');
+            tbody.innerHTML = '';
+            selectAnc.innerHTML = '<option value="">-- Pilih Pasien --</option>';
+            
+            let count = 0;
+            snapshot.forEach((childSnapshot) => {
+                const childData = childSnapshot.val();
+                const key = childSnapshot.key;
+                count++;
+
+                // Isi Tabel Pasien
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${childData.nama}</td>
+                        <td>${childData.nik}</td>
+                        <td>${childData.umur}</td>
+                        <td><a href="https://wa.me/62${childData.hp.substring(1)}" target="_blank" class="text-success"><i class="fab fa-whatsapp"></i> ${childData.hp}</a></td>
+                        <td><span class="badge bg-primary">${childData.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="hapusData('pasien', '${key}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+
+                // Isi Select Pasien di Form ANC
+                if(childData.status === 'Ibu Hamil') {
+                    selectAnc.innerHTML += `<option value="${key}">${childData.nama} (${childData.nik})</option>`;
+                }
+            });
+            document.getElementById('countPasien').innerText = count;
+        });
+
+        // E. Simpan Data ANC ke Firebase
+        function simpanANC(e) {
+            e.preventDefault();
+            const ancRef = db.ref('rekam_medis_anc').push();
+            const data = {
+                id_pasien: document.getElementById('anc_pasien').value,
+                hpht: document.getElementById('anc_hpht').value,
+                hpl: document.getElementById('anc_hpl').value,
+                usia_kehamilan: document.getElementById('anc_uk').value,
+                bb: document.getElementById('anc_bb').value,
+                td: document.getElementById('anc_td').value,
+                tfu: document.getElementById('anc_tfu').value,
+                djj: document.getElementById('anc_djj').value,
+                obat: document.getElementById('anc_obat').value,
+                tindakan: document.getElementById('anc_tindakan').value,
+                keluhan: document.getElementById('anc_keluhan').value,
+                tanggal_kunjungan: new Date().toISOString()
+            };
+
+            ancRef.set(data).then(() => {
+                alert("Data ANC Berhasil Disimpan!");
+                document.getElementById('formANC').reset();
+            });
+        }
+
+        // F. Fungsi Hapus Data Universal
+        function hapusData(path, key) {
+            if(confirm("Yakin ingin menghapus data ini?")) {
+                db.ref(path + '/' + key).remove();
+            }
+        }
+
+        // ==========================================
+        // 4. FITUR TAMBAHAN (EXPORT & CHART)
+        // ==========================================
+        
+        // Export to Excel
+        function exportExcel(tableID, filename = ''){
+            let downloadLink;
+            let dataType = 'application/vnd.ms-excel';
+            let tableSelect = document.getElementById(tableID);
+            let tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
+            filename = filename?filename+'.xls':'excel_data.xls';
+            downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            if(navigator.msSaveOrOpenBlob){
+                var blob = new Blob(['\ufeff', tableHTML], {type: dataType});
+                navigator.msSaveOrOpenBlob( blob, filename);
+            }else{
+                downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+                downloadLink.download = filename;
+                downloadLink.click();
+            }
+        }
+
+        // Export to PDF
+        function exportPDF(divId, filename) {
+            const element = document.getElementById(divId);
+            const opt = {
+                margin:       1,
+                filename:     filename + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Inisialisasi Chart.js (Dummy Data untuk Layout)
+        const ctx = document.getElementById('kunjunganChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                datasets: [{
+                    label: 'Jumlah Kunjungan Pasien',
+                    data: [12, 19, 15, 25, 22, 30],
+                    borderColor: '#ff758c',
+                    backgroundColor: 'rgba(255, 117, 140, 0.2)',
+                    borderWidth: 2,
+                    fill: true
+                }]
+            },
+            options: { responsive: true }
+        });
+
+    </script>
+</body>
+</html>
