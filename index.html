@@ -34,7 +34,11 @@
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1000;
             box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            overflow-y: auto; /* Tambahan scroll jika menu panjang */
         }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
+
         .sidebar h4 {
             font-weight: 700;
             font-size: 1.1rem;
@@ -85,7 +89,7 @@
             padding: 10px 15px;
             border: 1px solid #e0e0e0;
         }
-        .form-control:focus {
+        .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 0.25rem rgba(255, 117, 140, 0.25);
             border-color: var(--pink-primary);
         }
@@ -188,20 +192,20 @@
                 <div class="col-md-3 col-6">
                     <div class="card card-stat text-white p-4 text-center" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                         <i class="fas fa-baby fa-2x mb-3"></i>
-                        <h6 class="opacity-75">Persalinan</h6>
-                        <h2 class="mb-0 fw-bold" id="countPersalinan">0</h2>
+                        <h6 class="opacity-75">Kunjungan Bayi</h6>
+                        <h2 class="mb-0 fw-bold" id="countImun">0</h2>
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
                     <div class="card card-stat text-white p-4 text-center" style="background: linear-gradient(135deg, #f83600 0%, #f9d423 100%);">
                         <i class="fas fa-pills fa-2x mb-3"></i>
-                        <h6 class="opacity-75">KB Aktif</h6>
+                        <h6 class="opacity-75">Layanan KB</h6>
                         <h2 class="mb-0 fw-bold" id="countKB">0</h2>
                     </div>
                 </div>
             </div>
             <div class="card p-4 mt-2">
-                <h5 class="mb-4"><i class="fas fa-chart-area text-primary me-2"></i> Grafik Kunjungan Bulanan</h5>
+                <h5 class="mb-4"><i class="fas fa-chart-area text-primary me-2"></i> Grafik Kunjungan Bulanan (Simulasi)</h5>
                 <canvas id="kunjunganChart" height="80"></canvas>
             </div>
         </div>
@@ -209,10 +213,6 @@
         <div id="pasien" class="section-page">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Registrasi Pasien</h2>
-                <div>
-                    <button class="btn btn-outline-success border-2 fw-bold me-2" onclick="exportExcel('tabelPasien', 'Data_Pasien')"><i class="fas fa-file-excel"></i> Excel</button>
-                    <button class="btn btn-outline-danger border-2 fw-bold" onclick="exportPDF('pdfAreaPasien', 'Data_Pasien')"><i class="fas fa-file-pdf"></i> PDF</button>
-                </div>
             </div>
             
             <div class="card p-4">
@@ -224,7 +224,7 @@
                             <input type="text" class="form-control" id="p_nama" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted">NIK</label>
+                            <label class="form-label text-muted">NIK (Orang Tua jika Bayi)</label>
                             <input type="number" class="form-control" id="p_nik" required>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -266,8 +266,11 @@
                 </form>
             </div>
 
-            <div class="card p-4 mt-4" id="pdfAreaPasien">
-                <h5 class="mb-4 text-secondary">Daftar Pasien Terdaftar</h5>
+            <div class="card p-4 mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-secondary">Daftar Pasien Terdaftar</h5>
+                    <button class="btn btn-sm btn-outline-success" onclick="exportExcel('tabelPasien', 'Daftar_Pasien')"><i class="fas fa-file-excel"></i> Export</button>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="tabelPasien">
                         <thead class="table-light">
@@ -342,63 +345,140 @@
                             <textarea class="form-control" id="anc_keluhan" rows="2"></textarea>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-pink px-4"><i class="fas fa-save me-2"></i> Simpan Rekam Medis</button>
-                </form>
-            </div>
-        </div>
-
-        <div id="persalinan" class="section-page">
-            <h2 class="mb-4">Laporan Persalinan</h2>
-            <div class="card p-4">
-                <form onsubmit="event.preventDefault(); Swal.fire('Tersimpan!', 'Modul Persalinan berhasil disimulasikan', 'success');">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nama Ibu</label>
-                            <input type="text" class="form-control">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Tanggal & Waktu Persalinan</label>
-                            <input type="datetime-local" class="form-control">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Jenis Persalinan</label>
-                            <select class="form-select"><option>Normal</option><option>Tindakan</option></select>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Penolong</label>
-                            <input type="text" class="form-control" value="Bidan Tati Rohayati, S.ST">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Jenis Kelamin Bayi</label>
-                            <select class="form-select"><option>Laki-laki</option><option>Perempuan</option></select>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Berat Bayi (gram)</label>
-                            <input type="number" class="form-control">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Panjang Bayi (cm)</label>
-                            <input type="number" class="form-control">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label">Kondisi Bayi (APGAR)</label>
-                            <input type="text" class="form-control" placeholder="Menangis kuat, kemerahan">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-pink"><i class="fas fa-save"></i> Simpan Persalinan</button>
+                    <button type="submit" class="btn btn-pink px-4"><i class="fas fa-save me-2"></i> Simpan Rekam Medis ANC</button>
                 </form>
             </div>
         </div>
 
         <div id="kb" class="section-page">
-            <h2 class="mb-4">Pelayanan KB</h2>
+            <h2 class="mb-4">Pelayanan Keluarga Berencana (KB)</h2>
             <div class="card p-4">
-                <p class="text-muted">Formulir Pelayanan Keluarga Berencana.</p>
+                <form id="formKB" onsubmit="simpanKB(event)">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Nama Akseptor <span class="text-danger">*</span></label>
+                            <select class="form-select border-primary" id="kb_pasien" required>
+                                <option value="">-- Pilih Peserta KB --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Jenis Alat Kontrasepsi</label>
+                            <select class="form-select" id="kb_jenis" required>
+                                <option value="Suntik 1 Bulan">Suntik 1 Bulan</option>
+                                <option value="Suntik 3 Bulan">Suntik 3 Bulan</option>
+                                <option value="Pil KB">Pil KB</option>
+                                <option value="IUD">IUD</option>
+                                <option value="Implant">Implant</option>
+                                <option value="Kondom">Kondom</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Tekanan Darah</label>
+                            <input type="text" class="form-control" id="kb_td" placeholder="120/80">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Berat Badan (Kg)</label>
+                            <input type="number" class="form-control" id="kb_bb" step="0.1">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Tgl Pemasangan/Pemberian</label>
+                            <input type="date" class="form-control" id="kb_tgl_pasang" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label text-muted">Tgl Kembali (Kontrol)</label>
+                            <input type="date" class="form-control text-danger fw-bold" id="kb_tgl_kembali" required>
+                        </div>
+                        <div class="col-md-12 mb-4">
+                            <label class="form-label text-muted">Keluhan / Keterangan</label>
+                            <textarea class="form-control" id="kb_keterangan" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink px-4"><i class="fas fa-save me-2"></i> Simpan Data KB</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="imunisasi" class="section-page">
+            <h2 class="mb-4">Pelayanan Imunisasi Bayi</h2>
+            <div class="card p-4">
+                <form id="formImunisasi" onsubmit="simpanImunisasi(event)">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Nama Bayi/Anak <span class="text-danger">*</span></label>
+                            <select class="form-select border-primary" id="imun_pasien" required>
+                                <option value="">-- Pilih Pasien Bayi/Anak --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Jenis Vaksin</label>
+                            <select class="form-select" id="imun_vaksin" required>
+                                <option value="Hepatitis B0 (HB0)">Hepatitis B0 (HB0)</option>
+                                <option value="BCG & Polio 1">BCG & Polio 1</option>
+                                <option value="DPT-HB-Hib 1 & Polio 2">DPT-HB-Hib 1 & Polio 2</option>
+                                <option value="DPT-HB-Hib 2 & Polio 3">DPT-HB-Hib 2 & Polio 3</option>
+                                <option value="DPT-HB-Hib 3 & Polio 4">DPT-HB-Hib 3 & Polio 4</option>
+                                <option value="Campak/MR">Campak / MR</option>
+                                <option value="Lainnya">Lainnya...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Tanggal Imunisasi</label>
+                            <input type="date" class="form-control" id="imun_tgl" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Berat Badan (Kg)</label>
+                            <input type="number" class="form-control" id="imun_bb" step="0.1">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Suhu Tubuh (°C)</label>
+                            <input type="number" class="form-control" id="imun_suhu" step="0.1" placeholder="36.5">
+                        </div>
+                        <div class="col-md-12 mb-4">
+                            <label class="form-label text-muted">Kondisi / Reaksi Pasca Imunisasi</label>
+                            <input type="text" class="form-control" id="imun_keterangan" placeholder="Contoh: Rewel ringan, demam ringan">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-pink px-4"><i class="fas fa-save me-2"></i> Simpan Data Imunisasi</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="laporan" class="section-page">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Laporan Kunjungan Terpadu</h2>
+                <div>
+                    <button class="btn btn-outline-success border-2 fw-bold me-2" onclick="exportExcel('tabelLaporan', 'Laporan_Kunjungan_Bidan')"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn btn-outline-danger border-2 fw-bold" onclick="exportPDF('pdfAreaLaporan', 'Laporan_Kunjungan_Bidan')"><i class="fas fa-file-pdf"></i> PDF</button>
+                </div>
+            </div>
+            
+            <div class="card p-4" id="pdfAreaLaporan">
+                <h5 class="mb-4 text-secondary">Log Pelayanan Terakhir (ANC, KB, Imunisasi)</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle" id="tabelLaporan">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Tanggal Pelayanan</th>
+                                <th>Nama Pasien</th>
+                                <th>Jenis Layanan</th>
+                                <th>Detail Layanan / Vaksin / Usia Kehamilan</th>
+                                <th>Keterangan / Keluhan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataLaporan">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="persalinan" class="section-page">
+            <h2 class="mb-4">Modul Persalinan (Simulasi)</h2>
+            <div class="card p-4">
+                <p class="text-muted">Formulir Persalinan dalam tahap pengembangan UI/UX.</p>
             </div>
         </div>
         <div id="nifas" class="section-page"><h2 class="mb-4">Pemeriksaan Nifas</h2><div class="card p-4"><p class="text-muted">Modul dalam pengembangan.</p></div></div>
-        <div id="imunisasi" class="section-page"><h2 class="mb-4">Imunisasi Bayi</h2><div class="card p-4"><p class="text-muted">Modul dalam pengembangan.</p></div></div>
-        <div id="laporan" class="section-page"><h2 class="mb-4">Laporan & Rekapitulasi</h2><div class="card p-4"><p class="text-muted">Area rekap data kunjungan bulanan.</p></div></div>
 
     </div>
 
@@ -415,6 +495,9 @@
         // Tanggal Hari Ini di Dashboard
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', options);
+
+        // State Global untuk Data Pasien (Berguna untuk Laporan supaya tahu nama pasien)
+        let pasienDataList = {};
 
         // ==========================================
         // 1. KONFIGURASI FIREBASE
@@ -450,10 +533,8 @@
         }
 
         // ==========================================
-        // 3. LOGIC APLIKASI
+        // 3. LOGIC UMUM & PASIEN
         // ==========================================
-        
-        // A. Hitung Umur
         function hitungUmur() {
             const tglLahir = new Date(document.getElementById('p_tgl').value);
             const hariIni = new Date();
@@ -465,7 +546,6 @@
             document.getElementById('p_umur').value = umur + " Tahun";
         }
 
-        // B. Hitung HPL (Naegele)
         function hitungHPL() {
             const hphtInput = document.getElementById('anc_hpht').value;
             if (hphtInput) {
@@ -482,7 +562,6 @@
             }
         }
 
-        // C. Simpan Data Pasien
         function simpanPasien(e) {
             e.preventDefault();
             const pasienRef = db.ref('pasien').push();
@@ -499,44 +578,46 @@
             };
 
             pasienRef.set(data).then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Data Pasien Berhasil Disimpan',
-                    confirmButtonColor: '#ff758c'
-                });
+                Swal.fire({icon: 'success', title: 'Berhasil!', text: 'Data Pasien Disimpan', confirmButtonColor: '#ff758c'});
                 document.getElementById('formPasien').reset();
-            }).catch(err => {
-                Swal.fire('Error', err.message, 'error');
             });
         }
 
-        // D. Tampilkan Data Pasien Realtime
+        // D. Tampilkan Data Pasien & Update Dropdown (Realtime)
         db.ref('pasien').on('value', (snapshot) => {
             const tbody = document.getElementById('dataPasien');
             const selectAnc = document.getElementById('anc_pasien');
+            const selectKb = document.getElementById('kb_pasien');
+            const selectImun = document.getElementById('imun_pasien');
+            
             tbody.innerHTML = '';
             selectAnc.innerHTML = '<option value="">-- Pilih Pasien Ibu Hamil --</option>';
+            selectKb.innerHTML = '<option value="">-- Pilih Peserta KB --</option>';
+            selectImun.innerHTML = '<option value="">-- Pilih Pasien Bayi/Anak --</option>';
             
             let count = 0;
-            let countANC = 0;
+            pasienDataList = {}; // Reset global state
 
             snapshot.forEach((childSnapshot) => {
                 const childData = childSnapshot.val();
                 const key = childSnapshot.key;
                 count++;
+                
+                // Simpan ke state global untuk referensi Laporan
+                pasienDataList[key] = childData.nama;
 
                 let badgeColor = 'bg-secondary';
                 if(childData.status === 'Ibu Hamil') badgeColor = 'bg-success';
                 else if(childData.status === 'KB') badgeColor = 'bg-warning text-dark';
                 else if(childData.status === 'Bayi/Anak') badgeColor = 'bg-info text-dark';
 
+                // Tabel Pasien
                 tbody.innerHTML += `
                     <tr>
                         <td class="fw-bold">${childData.nama}</td>
                         <td>${childData.nik}</td>
                         <td>${childData.umur}</td>
-                        <td><a href="https://wa.me/62${childData.hp.substring(1)}" target="_blank" class="text-success text-decoration-none"><i class="fab fa-whatsapp fs-5"></i> ${childData.hp}</a></td>
+                        <td><a href="https://wa.me/62${childData.hp.substring(1)}" target="_blank" class="text-success text-decoration-none"><i class="fab fa-whatsapp fs-5"></i></a></td>
                         <td><span class="badge ${badgeColor}">${childData.status}</span></td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-danger border-0" onclick="hapusData('pasien', '${key}')" title="Hapus"><i class="fas fa-trash-alt"></i></button>
@@ -544,17 +625,24 @@
                     </tr>
                 `;
 
+                // Isi Dropdown sesuai Status
                 if(childData.status === 'Ibu Hamil') {
-                    countANC++;
-                    selectAnc.innerHTML += `<option value="${key}">${childData.nama} (NIK: ${childData.nik})</option>`;
+                    selectAnc.innerHTML += `<option value="${key}">${childData.nama}</option>`;
+                } else if(childData.status === 'KB') {
+                    selectKb.innerHTML += `<option value="${key}">${childData.nama}</option>`;
+                } else if(childData.status === 'Bayi/Anak') {
+                    selectImun.innerHTML += `<option value="${key}">${childData.nama}</option>`;
                 }
             });
             
             document.getElementById('countPasien').innerText = count;
-            document.getElementById('countANC').innerText = countANC;
+            renderLaporan(); // Render ulang laporan jika ada nama pasien yg berubah
         });
 
-        // E. Simpan Data ANC
+        // ==========================================
+        // 4. LOGIC REKAM MEDIS (ANC, KB, IMUNISASI)
+        // ==========================================
+        
         function simpanANC(e) {
             e.preventDefault();
             const ancRef = db.ref('rekam_medis_anc').push();
@@ -563,62 +651,127 @@
                 hpht: document.getElementById('anc_hpht').value,
                 hpl: document.getElementById('anc_hpl').value,
                 usia_kehamilan: document.getElementById('anc_uk').value,
-                bb: document.getElementById('anc_bb').value,
-                td: document.getElementById('anc_td').value,
-                tfu: document.getElementById('anc_tfu').value,
-                djj: document.getElementById('anc_djj').value,
-                obat: document.getElementById('anc_obat').value,
-                tindakan: document.getElementById('anc_tindakan').value,
                 keluhan: document.getElementById('anc_keluhan').value,
-                tanggal_kunjungan: new Date().toISOString()
+                tanggal_kunjungan: new Date().toISOString().split('T')[0],
+                timestamp: Date.now()
             };
-
             ancRef.set(data).then(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Tersimpan!',
-                    text: 'Data Rekam Medis ANC berhasil dicatat.',
-                    confirmButtonColor: '#ff758c'
-                });
+                Swal.fire({icon: 'success', title: 'Tersimpan!', text: 'Data ANC dicatat', confirmButtonColor: '#ff758c'});
                 document.getElementById('formANC').reset();
             });
         }
 
-        // F. Fungsi Hapus Data dengan SweetAlert
+        function simpanKB(e) {
+            e.preventDefault();
+            const kbRef = db.ref('rekam_medis_kb').push();
+            const data = {
+                id_pasien: document.getElementById('kb_pasien').value,
+                jenis_kb: document.getElementById('kb_jenis').value,
+                tgl_pasang: document.getElementById('kb_tgl_pasang').value,
+                tgl_kembali: document.getElementById('kb_tgl_kembali').value,
+                keterangan: document.getElementById('kb_keterangan').value,
+                tanggal_kunjungan: document.getElementById('kb_tgl_pasang').value,
+                timestamp: Date.now()
+            };
+            kbRef.set(data).then(() => {
+                Swal.fire({icon: 'success', title: 'Tersimpan!', text: 'Data KB dicatat', confirmButtonColor: '#ff758c'});
+                document.getElementById('formKB').reset();
+            });
+        }
+
+        function simpanImunisasi(e) {
+            e.preventDefault();
+            const imunRef = db.ref('rekam_medis_imunisasi').push();
+            const data = {
+                id_pasien: document.getElementById('imun_pasien').value,
+                jenis_vaksin: document.getElementById('imun_vaksin').value,
+                tgl_imunisasi: document.getElementById('imun_tgl').value,
+                keterangan: document.getElementById('imun_keterangan').value,
+                tanggal_kunjungan: document.getElementById('imun_tgl').value,
+                timestamp: Date.now()
+            };
+            imunRef.set(data).then(() => {
+                Swal.fire({icon: 'success', title: 'Tersimpan!', text: 'Data Imunisasi dicatat', confirmButtonColor: '#ff758c'});
+                document.getElementById('formImunisasi').reset();
+            });
+        }
+
+        // ==========================================
+        // 5. UPDATE DASHBOARD STATS & LAPORAN TERPADU
+        // ==========================================
+        
+        let dataANC = [];
+        let dataKB = [];
+        let dataImun = [];
+
+        db.ref('rekam_medis_anc').on('value', (snap) => {
+            document.getElementById('countANC').innerText = snap.numChildren();
+            dataANC = []; snap.forEach(c => dataANC.push(c.val())); renderLaporan();
+        });
+
+        db.ref('rekam_medis_kb').on('value', (snap) => {
+            document.getElementById('countKB').innerText = snap.numChildren();
+            dataKB = []; snap.forEach(c => dataKB.push(c.val())); renderLaporan();
+        });
+
+        db.ref('rekam_medis_imunisasi').on('value', (snap) => {
+            document.getElementById('countImun').innerText = snap.numChildren();
+            dataImun = []; snap.forEach(c => dataImun.push(c.val())); renderLaporan();
+        });
+
+        function renderLaporan() {
+            const tbody = document.getElementById('dataLaporan');
+            tbody.innerHTML = '';
+            
+            // Gabungkan semua data kunjungan
+            let allVisits = [];
+            dataANC.forEach(d => allVisits.push({ type: 'ANC', date: d.tanggal_kunjungan, pid: d.id_pasien, detail: d.usia_kehamilan + ' Minggu', ket: d.keluhan, ts: d.timestamp }));
+            dataKB.forEach(d => allVisits.push({ type: 'KB', date: d.tanggal_kunjungan, pid: d.id_pasien, detail: d.jenis_kb, ket: d.keterangan, ts: d.timestamp }));
+            dataImun.forEach(d => allVisits.push({ type: 'Imunisasi', date: d.tanggal_kunjungan, pid: d.id_pasien, detail: d.jenis_vaksin, ket: d.keterangan, ts: d.timestamp }));
+
+            // Urutkan berdasarkan timestamp terbaru
+            allVisits.sort((a, b) => b.ts - a.ts);
+
+            allVisits.forEach(v => {
+                let badgeClass = v.type === 'ANC' ? 'bg-success' : (v.type === 'KB' ? 'bg-warning text-dark' : 'bg-info text-dark');
+                let namaPasien = pasienDataList[v.pid] || '<i>Pasien Dihapus</i>';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-center">${v.date}</td>
+                        <td class="fw-bold">${namaPasien}</td>
+                        <td class="text-center"><span class="badge ${badgeClass}">${v.type}</span></td>
+                        <td>${v.detail}</td>
+                        <td>${v.ket || '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
         function hapusData(path, key) {
             Swal.fire({
-                title: 'Hapus Data?',
-                text: "Data yang dihapus tidak bisa dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal'
+                title: 'Hapus Data?', icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#d33', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Hapus!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    db.ref(path + '/' + key).remove().then(() => {
-                        Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
-                    });
+                    db.ref(path + '/' + key).remove();
                 }
             });
         }
 
         // ==========================================
-        // 4. EXPORT & CHART
+        // 6. EXPORT & CHART
         // ==========================================
-        
         function exportExcel(tableID, filename = ''){
-            let downloadLink;
             let dataType = 'application/vnd.ms-excel';
             let tableSelect = document.getElementById(tableID);
             let tableHTML = tableSelect.outerHTML.replace(/ /g, '%20');
             filename = filename?filename+'.xls':'excel_data.xls';
-            downloadLink = document.createElement("a");
+            let downloadLink = document.createElement("a");
             document.body.appendChild(downloadLink);
             if(navigator.msSaveOrOpenBlob){
-                var blob = new Blob(['\ufeff', tableHTML], {type: dataType});
-                navigator.msSaveOrOpenBlob( blob, filename);
+                navigator.msSaveOrOpenBlob(new Blob(['\ufeff', tableHTML], {type: dataType}), filename);
             }else{
                 downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
                 downloadLink.download = filename;
@@ -628,48 +781,23 @@
 
         function exportPDF(divId, filename) {
             const element = document.getElementById(divId);
-            const opt = {
-                margin:       0.5,
-                filename:     filename + '.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-            };
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set({
+                margin: 0.5, filename: filename + '.pdf', image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+            }).from(element).save();
         }
 
-        // Styling Chart.js supaya lebih modern
+        // Dummy Chart
         const ctx = document.getElementById('kunjunganChart').getContext('2d');
-        const gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientFill.addColorStop(0, 'rgba(255, 117, 140, 0.5)');
-        gradientFill.addColorStop(1, 'rgba(255, 117, 140, 0.05)');
-
+        const grad = ctx.createLinearGradient(0, 0, 0, 400);
+        grad.addColorStop(0, 'rgba(255, 117, 140, 0.5)'); grad.addColorStop(1, 'rgba(255, 117, 140, 0.05)');
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                datasets: [{
-                    label: 'Jumlah Kunjungan Pasien',
-                    data: [12, 19, 15, 25, 22, 30],
-                    borderColor: '#ff758c',
-                    backgroundColor: gradientFill,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#fff',
-                    pointBorderColor: '#ff758c',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    fill: true,
-                    tension: 0.4 // Membuat kurva melengkung (smooth)
-                }]
+                datasets: [{ label: 'Kunjungan', data: [15, 22, 18, 30, 25, 40], borderColor: '#ff758c', backgroundColor: grad, fill: true, tension: 0.4 }]
             },
-            options: { 
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { border: { dash: [5, 5] }, grid: { color: '#e9ecef' } }
-                }
-            }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } } } }
         });
     </script>
 </body>
